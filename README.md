@@ -1,6 +1,6 @@
 ## Karma Program
 
-A Solana program for tracking user reputation.
+A Solana program for identity and reputation.
 
 Installation (Rust required):
 
