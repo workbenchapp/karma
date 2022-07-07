@@ -38,7 +38,7 @@ For instance, in [daonetes.com](http://daonetes.com), we want a “reputation sy
 
 a prototype frontend page for a user profile, to help visualize —
 
-![](../blob/master/docs/images/karma_main.png?raw=true)
+![](/docs/images/karma_main.png?raw=true)
 
 some feature ideas —
 
@@ -56,11 +56,11 @@ some feature ideas —
 
 Part of this identity/reputation system can be chunked out into associating visual identity to a particular keypair or series of keypairs, i.e., avatar(s).
 
-![](../blob/master/docs/images/davatar_main.png?raw=true)
+![](/docs/images/davatar_main.png?raw=true)
 
 Users should be able to view avatars associated with their wallet as well as mint new ones.
 
-![](../blob/master/docs/images/davatar_logged_in.png?raw=true)
+![](/docs/images/davatar_logged_in.png?raw=true)
 
 **Implementation Details**
 
