@@ -1,3 +1,5 @@
-html, body, #root {
-  @apply w-full h-full;
+html,
+body,
+#root {
+  @apply w-full h-full bg-surface-600;
 }
