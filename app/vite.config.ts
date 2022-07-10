@@ -16,7 +16,7 @@ export default defineConfig({
         fileExtensions: ["html", "js", "ts", "jsx", "tsx"],
       },
     }),
-    Icons({ compiler: "jsx", jsx: "react" }),
+    Icons({ compiler: "jsx", jsx: "react", defaultStyle: "display: block" }),
     VitePluginFonts({
       google: {
         families: ["Roboto"],
