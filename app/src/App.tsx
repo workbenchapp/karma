@@ -133,21 +133,25 @@ function App() {
               )}
               <div className="flex w-full items-center gap-2">
                 <h2 className="text-gray-400">Available avatars</h2>
+                <input
+                type="file"
+                accept="image/*"
+                {...getInputProps()}
+              />
                 <button
-                  className="p-1 hover:bg-surface-200 rounded-full"
+                  className="p-1 hover:bg-surface-200 rounded-full relative"
                   aria-label="Upload Davatar"
                   onClick={() => uploadInput.current?.click()}
                 >
                   <IconMdiPlus />
-                </button>
-                <input
+                  <input
                   ref={uploadInput}
                   type="file"
                   accept="image/*"
-                  className="hidden"
+                  className="absolute top-0 left-0 invisible"
                   onChange={(ev) => onFileSelect(Array.from(ev.currentTarget.files!))}
-                  {...getInputProps()}
                 />
+                </button>
               </div>
               <div className="grid grid-cols-4 gap-4 w-full items-center">
                 {nfts
