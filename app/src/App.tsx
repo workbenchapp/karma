@@ -1,5 +1,5 @@
-import { Davatar } from "./davatar/Davatar";
-import "./davatar/Davatar.css";
+import "./lib/Davatar.css";
+import { Davatar } from "./lib/DavatarReact";
 
 export const App: React.FC = () => {
   return (
