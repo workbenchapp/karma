@@ -1,0 +1,5 @@
+html,
+body,
+#root {
+  @apply w-full h-full bg-surface-600;
+}
