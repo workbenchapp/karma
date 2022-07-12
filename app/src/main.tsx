@@ -10,7 +10,7 @@ import React, { useMemo, useState } from "react";
 import ReactDOM from "react-dom/client";
 import "virtual:fonts.css";
 import "windi.css";
-import App from "./App";
+import { App } from "./App";
 import "./index.css";
 
 const Index = () => {
