@@ -37,6 +37,9 @@ export const Davatar: React.FC = (props) => {
 
   const onDavatarSelect = async (nft: Nft) => {
     setProcessing(true);
+    if (!client.davatar) {
+      await client.initialize();
+    }
     await client.setAsActive(nft);
     setDavatar(nft);
     await client.fetchNfts();
