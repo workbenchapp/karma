@@ -33,7 +33,9 @@ describe("karma", () => {
             .signers([realm]);
 
         const realmAccount = await program.account.realm.fetch(realm.publicKey);
-        console.log(realmAccount)
+
+        assert.equal(realmAccount.creator.toBase58(), provider.wallet.publicKey.toBase58());
+        assert.equal(realmAccount.name, 'First Realm');
     });
 
     it("Minting a new token.", async () => {
