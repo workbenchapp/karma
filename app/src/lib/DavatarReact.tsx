@@ -4,7 +4,6 @@ import {
   offset,
   useFloating,
 } from "@floating-ui/react-dom";
-import { Nft } from "@metaplex-foundation/js";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import OutsideClickHandler from "react-outside-click-handler";
@@ -31,16 +30,19 @@ export const Davatar: React.FC = (props) => {
   );
 
   const [changeOpen, setChangeOpen] = useState(false);
-  const [davatar, setDavatar] = useState<Nft | undefined>(undefined);
-  const [nfts, setNfts] = useState<Nft[] | undefined>(undefined);
+  const [davatarURI, setDavatarURI] = useState<string | undefined>(undefined);
+  const [davatars, setDavatars] = useState<string[] | undefined>(undefined);
   const [processing, setProcessing] = useState(false);
 
-  const onDavatarSelect = async (nft: Nft) => {
+  const onDavatarSelect = async (address: string) => {
     setProcessing(true);
-    await client.setAsActive(nft);
-    setDavatar(nft);
-    await client.fetchNfts();
-    setNfts(client.nfts);
+    if (!client.davatar) {
+      await client.initialize();
+    }
+    await client.setAsActive(address);
+    setDavatarURI(address);
+    await client.fetchDavatars();
+    setDavatars(client.davatars);
     setProcessing(false);
   };
 
@@ -48,20 +50,21 @@ export const Davatar: React.FC = (props) => {
     setProcessing(true);
     const target = files[0];
     if (!target) return;
-    const nft = await client.uploadNew(target);
-    onDavatarSelect(nft);
-    await client.setAsActive(nft);
-    setDavatar(nft);
-    await client.fetchNfts();
-    setNfts(client.nfts);
+    if (!client.davatar) {
+      await client.initialize();
+    }
+    const {
+      metadata: { image },
+    } = await client.uploadNew(target);
+    onDavatarSelect(image!);
   };
 
   useEffect(() => {
     (async () => {
       if (!adapter.publicKey) return;
-      await client.fetchNfts();
-      setDavatar(client.davatar);
-      setNfts(client.nfts);
+      await client.fetchDavatars();
+      setDavatarURI(client.davatar?.metadata.image);
+      setDavatars(client.davatars);
     })();
   }, [adapter]);
 
@@ -72,7 +75,7 @@ export const Davatar: React.FC = (props) => {
         ref={reference}
         onClick={() => setChangeOpen(true)}
       >
-        <img className="davatar__img" src={davatar?.uri} />
+        <img className="davatar__img" src={davatarURI} />
         <div className="davatar__img-overlay">
           <span className="davatar__img-overlay-text">Change</span>
         </div>
@@ -123,17 +126,17 @@ export const Davatar: React.FC = (props) => {
               }
             />
           </button>
-          {nfts?.map((nft) => (
+          {davatars?.map((uri) => (
             <button
               className={`davatar__popper-item ${
-                nft.uri === davatar?.uri ? "davatar__popper-active-item" : ""
+                uri === davatarURI ? "davatar__popper-active-item" : ""
               }`}
-              key={nft.name}
-              onClick={() => onDavatarSelect(nft)}
+              key={uri}
+              onClick={() => onDavatarSelect(uri)}
             >
               <img
                 className="davatar__popper-item-img"
-                src={nft?.uri}
+                src={uri}
                 draggable="false"
               />
             </button>

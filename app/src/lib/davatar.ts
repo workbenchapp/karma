@@ -11,7 +11,7 @@ import { Connection } from "@solana/web3.js";
 export class DavatarCore {
   client: Metaplex;
   davatar?: Nft;
-  nfts?: Nft[];
+  davatars?: string[];
 
   constructor(private connection: Connection, private adapter: WalletAdapter) {
     this.client = Metaplex.make(this.connection)
@@ -25,41 +25,67 @@ export class DavatarCore {
       );
   }
 
-  async fetchNfts() {
+  async fetchDavatars() {
     if (!this.adapter.publicKey)
       throw new Error("adapter has no public key available");
     const nfts = await this.client
       .nfts()
       .findAllByOwner(this.adapter.publicKey);
-
     this.davatar = nfts.find((nft) => nft.name === "davatar");
-    this.nfts = nfts.filter((nft) => nft.name !== "davatar");
+    await this.davatar?.metadataTask.run();
+    const davatars = this.davatar?.metadata.description?.split("\n") ?? [];
+    this.davatars = [
+      ...davatars,
+      ...(nfts
+        .filter((nft) => nft.name !== "davatar")
+        .map((nft) => nft.metadata.image)
+        .filter((v) => !!v) as string[]),
+    ];
   }
 
-  async setAsActive(nft: Nft) {
+  async setAsActive(addr: string) {
     if (!this.davatar) throw new Error("you do not have a davatar initialized");
-    await this.client.nfts().update(this.davatar, {
-      uri: nft.uri,
+
+    const uris = this.davatar.metadata.description?.split("\n") ?? [];
+    console.log("davatar list", uris);
+    if (uris.indexOf(addr) === -1) {
+      uris.push(addr);
+      console.log(`added new davatar to list: ${addr}`);
+    }
+    console.log("uploading metadata");
+    const meta = await this.client.nfts().uploadMetadata({
+      ...this.davatar.metadata,
+      name: "davatar",
+      description: uris.join("\n"),
+      image: addr,
     });
+    console.log("metadata uploaded");
+    console.log("updating nft");
+    await this.client.nfts().update(this.davatar, {
+      uri: meta.uri,
+    });
+    console.log("nft updated");
   }
 
   async uploadNew(file: File) {
-    const address = await this.client
-      .storage()
-      .upload(await useMetaplexFileFromBrowser(file));
-    const { nft } = await this.client.nfts().create({
-      uri: address,
-      name: address.slice(address.indexOf("/"), 30),
-      isMutable: false,
+    if (!this.davatar) throw new Error("You do not have a davatar initialized");
+    console.log("uploading file...");
+    const metadata = await this.client.nfts().uploadMetadata({
+      ...this.davatar.metadata,
+      image: await useMetaplexFileFromBrowser(file),
     });
-    return nft;
+    console.log("file uploaded!...");
+    return metadata;
   }
 
   async initialize() {
-    await this.client.nfts().create({
+    console.log("initializing davatar...");
+    const { nft } = await this.client.nfts().create({
       isMutable: true,
       uri: "",
       name: "davatar",
     });
+    this.davatar = nft;
+    console.log("davatar initialized!");
   }
 }
