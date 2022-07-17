@@ -40,7 +40,7 @@
 }
 
 .davatar__popper-button {
-  @apply rounded-md flex items-center justify-center border-2 border-dashed border-white/30 hover:bg-white/10;
+  @apply rounded-md flex items-center justify-center border-2 border-dashed border-white/30 hover:bg-white/10 w-25 h-25;
 }
 
 ::-webkit-scrollbar {
