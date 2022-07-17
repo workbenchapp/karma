@@ -2,19 +2,10 @@ use anchor_lang::prelude::*;
 use anchor_spl::token;
 use anchor_spl::token::{MintTo, Token, Transfer};
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
-
-// #[program]
-// pub mod karma {
-//     use super::*;
-
-//     pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-//         Ok(())
-//     }
-// }
+declare_id!("CcUuNMJcd3AxStW1CvADDT1rcPbf5cVkfxo1GX1gMf3j");
 
 #[program]
-pub mod karma_token {
+pub mod karma {
     use super::*;
 
     pub fn mint_token(ctx: Context<MintToken>) -> Result<()> {
