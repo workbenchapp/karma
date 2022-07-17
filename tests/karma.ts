@@ -16,15 +16,29 @@ describe("karma", () => {
     const provider = anchor.AnchorProvider.env();
     console.log("THIS IS THE PROVIDER", provider);
     anchor.setProvider(provider);
-    
+
     const program = anchor.workspace.Karma as Program<Karma>;
 
-    // Generate a random keypair that will represent the token
-    const mintKeyPair: anchor.web3.Keypair = anchor.web3.Keypair.generate();
+    // Get anchor wallet's public key
+    const walletPubKey = provider.wallet.publicKey;
+
+    it("Creating a new realm.", async () => {
+        const realm = anchor.web3.Keypair.generate();
+        await program.methods.initializeRealm("First Realm")
+            .accounts({
+                realm: realm.publicKey,
+                creator: provider.wallet.publicKey,
+                systemProgram: anchor.web3.SystemProgram.programId
+            })
+            .signers([realm]);
+
+        const realmAccount = await program.account.realm.fetch(realm.publicKey);
+        console.log(realmAccount)
+    });
 
     it("Minting a new token.", async () => {
-        // Get anchor wallet's public key
-        const walletPubKey = provider.wallet.publicKey;
+        // Generate a random keypair that will represent the token
+        const mintKeyPair: anchor.web3.Keypair = anchor.web3.Keypair.generate();
 
         // Amout of sol for rent
         const lamports: number = await program.provider.connection.getMinimumBalanceForRentExemption(
