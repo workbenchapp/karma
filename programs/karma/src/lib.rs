@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token;
 use anchor_spl::token::{MintTo, Token, Transfer};
 
-declare_id!("CcUuNMJcd3AxStW1CvADDT1rcPbf5cVkfxo1GX1gMf3j");
+declare_id!("HvE81vvHBa7bZ3bkJS4Zm4mZc1TaX2vdb5U1V5eiNuVp");
 
 #[program]
 pub mod karma {

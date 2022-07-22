@@ -2,7 +2,7 @@
 seeds = false
 
 [programs.localnet]
-karma_token = "CcUuNMJcd3AxStW1CvADDT1rcPbf5cVkfxo1GX1gMf3j"
+karma = "HvE81vvHBa7bZ3bkJS4Zm4mZc1TaX2vdb5U1V5eiNuVp"
 
 [registry]
 url = "https://anchor.projectserum.com"
