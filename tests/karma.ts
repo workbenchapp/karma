@@ -14,7 +14,6 @@ import { assert } from "chai";
 describe("karma", () => {
     // Configure the client to use the local cluster.
     const provider = anchor.AnchorProvider.env();
-    console.log("THIS IS THE PROVIDER", provider);
     anchor.setProvider(provider);
 
     const program = anchor.workspace.Karma as Program<Karma>;
@@ -30,7 +29,7 @@ describe("karma", () => {
                 creator: provider.wallet.publicKey,
                 systemProgram: anchor.web3.SystemProgram.programId
             })
-            .signers([realm]);
+            .rpc();
 
         const realmAccount = await program.account.realm.fetch(realm.publicKey);
 
