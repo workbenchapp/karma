@@ -1,0 +1,25 @@
+{
+  "name": "dprofile",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "mitosis": "mitosis build",
+    "build": "pnpm run mitosis",
+    "start": "watch 'pnpm run mitosis' ./src ./overrides",
+    "test": "vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@builder.io/eslint-plugin-mitosis": "^0.0.1",
+    "vitest": "^0.18.1"
+  },
+  "dependencies": {
+    "@builder.io/mitosis": "0.0.56-28",
+    "@builder.io/mitosis-cli": "^0.0.16",
+    "@metaplex-foundation/js": "^0.13.1",
+    "@solana/web3.js": "^1.50.0"
+  }
+}
