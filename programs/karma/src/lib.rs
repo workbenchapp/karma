@@ -12,7 +12,10 @@ pub mod karma {
         let realm: &mut Account<Realm> = &mut ctx.accounts.realm;
         let creator: &Signer = &ctx.accounts.creator;
 
+        // passed name is 
+
         realm.name = name;
+        realm.bump = *ctx.bumps.get("realm").unwrap();
         realm.creator = *creator.key;
 
         // TODO: mint karma tokens for this realm (moving the logic from mint_token here)
@@ -44,7 +47,7 @@ pub mod karma {
 
 #[derive(Accounts)]
 pub struct InitializeRealm<'info> {
-    #[account(init, payer = creator, space =  Realm::LEN)]
+    #[account(init, seeds = [b"realm".as_ref()], bump, payer = creator, space =  Realm::LEN)]
     pub realm: Account<'info, Realm>, // Is the realms program itself going to own the realm account? Not sure
     #[account(mut)]
     pub creator: Signer<'info>,

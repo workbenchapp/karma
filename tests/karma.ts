@@ -1,6 +1,7 @@
 
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
+import web3 from "@solana/web3.js";
 import { Karma } from "../target/types/karma";
 import {
     TOKEN_PROGRAM_ID,
@@ -9,6 +10,7 @@ import {
     getAssociatedTokenAddress,
     createInitializeMintInstruction,
 } from "@solana/spl-token";
+import idl from "../target/idl/karma.json";
 import { assert } from "chai";
 
 describe("karma", () => {
@@ -21,11 +23,16 @@ describe("karma", () => {
     // Get anchor wallet's public key
     const walletPubKey = provider.wallet.publicKey;
 
+    // Get a public key to generate realm PDA
+    // const programID = new web3.PublicKey(idl.metadata.address);
+
     it("Creating a new realm.", async () => {
-        const realm = anchor.web3.Keypair.generate();
+        // let [account, accountBump] = await web3.PublicKey.findProgramAddress(  // Iterate through all possibilities to find a bump that kicks the address off the eliptic curve
+        //     [Buffer.from("realm")],
+        //     programID
+        // )
         await program.methods.initializeRealm("First Realm")
             .accounts({
-                realm: realm.publicKey,
                 creator: provider.wallet.publicKey,
                 systemProgram: anchor.web3.SystemProgram.programId
             })
