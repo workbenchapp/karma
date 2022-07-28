@@ -15,7 +15,6 @@ pub mod karma {
         // passed name is 
 
         realm.name = name;
-        realm.bump = *ctx.bumps.get("realm").unwrap();
         realm.creator = *creator.key;
 
         // TODO: mint karma tokens for this realm (moving the logic from mint_token here)
