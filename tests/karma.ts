@@ -1,17 +1,13 @@
 
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
-import * as web3 from "@solana/web3.js";
-import { Karma } from "../target/types/karma";
 import {
-    TOKEN_PROGRAM_ID,
-    MINT_SIZE,
-    createAssociatedTokenAccountInstruction,
-    getAssociatedTokenAddress,
-    createInitializeMintInstruction,
+    createAssociatedTokenAccountInstruction, createInitializeMintInstruction, getAssociatedTokenAddress, MINT_SIZE, TOKEN_PROGRAM_ID
 } from "@solana/spl-token";
-import idl from "../target/idl/karma.json";
+import * as web3 from "@solana/web3.js";
 import { assert } from "chai";
+import idl from "../target/idl/karma.json";
+import { Karma } from "../target/types/karma";
 
 describe("karma", () => {
     // Configure the client to use the local cluster.
@@ -29,7 +25,7 @@ describe("karma", () => {
 
     it("Creating a new realm.", async () => {
         let [account, accountBump] = await web3.PublicKey.findProgramAddress(  // Iterate through all possibilities to find a bump that kicks the address off the eliptic curve
-            [Buffer.from("realm")],
+            [Buffer.from("realm"), provider.wallet.publicKey.toBuffer()],
             programID
         )
         await program.methods.initializeRealm("First Realm")

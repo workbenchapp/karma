@@ -6,16 +6,19 @@ declare_id!("HvE81vvHBa7bZ3bkJS4Zm4mZc1TaX2vdb5U1V5eiNuVp");
 
 #[program]
 pub mod karma {
+    use std::ops::Deref;
+
     use super::*;
 
     pub fn initialize_realm(ctx: Context<InitializeRealm>, name: String) -> Result<()> {
-        let realm: &mut Account<Realm> = &mut ctx.accounts.realm;
-        let creator: &Signer = &ctx.accounts.creator;
+        let realm = &mut ctx.accounts.realm;
+        let creator = &ctx.accounts.creator;
 
-        // passed name is 
+        // passed name is
 
-        realm.name = name;
+        // realm.name = name;
         realm.creator = *creator.key;
+        realm.name = name;
 
         // TODO: mint karma tokens for this realm (moving the logic from mint_token here)
         // TODO: establish an authority for who can allocate those tokens
@@ -46,7 +49,7 @@ pub mod karma {
 
 #[derive(Accounts)]
 pub struct InitializeRealm<'info> {
-    #[account(init, seeds = [b"realm".as_ref()], bump, payer = creator, space =  Realm::LEN)]
+    #[account(init, seeds = [b"realm".as_ref(), creator.key().as_ref()], bump, payer = creator, space =  Realm::LEN)]
     pub realm: Account<'info, Realm>, // Is the realms program itself going to own the realm account? Not sure
     #[account(mut)]
     pub creator: Signer<'info>,
@@ -70,8 +73,7 @@ pub struct MintToken<'info> {
 #[account]
 pub struct Realm {
     pub name: String,
-    pub creator: Pubkey
-    // TODO: add some more fields
+    pub creator: Pubkey, // TODO: add some more fields
 }
 
 // Kepping track of the space required
@@ -81,5 +83,6 @@ const STRING_LENGTH_PREFIX: usize = 4;
 const NAME_LENGTH: usize = 50 * 4;
 
 impl Realm {
-    const LEN: usize = DISCRIMINATOR_LENGTH + STRING_LENGTH_PREFIX + NAME_LENGTH + PUBLIC_KEY_LENGTH;
+    const LEN: usize =
+        DISCRIMINATOR_LENGTH + STRING_LENGTH_PREFIX + NAME_LENGTH + PUBLIC_KEY_LENGTH;
 }
