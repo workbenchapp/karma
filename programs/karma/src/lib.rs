@@ -1,47 +1,47 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token;
-use anchor_spl::token::{MintTo, Token, Transfer};
+use anchor_spl::token::{self, Mint, TokenAccount};
+use anchor_spl::token::{MintTo, Token};
 
 declare_id!("HvE81vvHBa7bZ3bkJS4Zm4mZc1TaX2vdb5U1V5eiNuVp");
 
 #[program]
 pub mod karma {
-    use std::ops::Deref;
 
     use super::*;
 
-    pub fn initialize_realm(ctx: Context<InitializeRealm>, name: String) -> Result<()> {
+    pub fn initialize_realm(
+        ctx: Context<InitializeRealm>,
+        name: String,
+        realm_bump: u8,
+        mint_bump: u8,
+    ) -> Result<()> {
         let realm = &mut ctx.accounts.realm;
         let creator = &ctx.accounts.creator;
 
-        // passed name is
-
-        // realm.name = name;
         realm.creator = *creator.key;
         realm.name = name;
-
-        // TODO: mint karma tokens for this realm (moving the logic from mint_token here)
-        // TODO: establish an authority for who can allocate those tokens
+        realm.bump = realm_bump;
+        realm.mint_bump = mint_bump;
 
         Ok(())
     }
 
     // TODO: tip instruction to be used to transfer 1 token to a given recipient
 
-    pub fn mint_token(ctx: Context<MintToken>) -> Result<()> {
+    pub fn tip(ctx: Context<Tip>) -> Result<()> {
         // Create the MintTo struct for our context
         let cpi_accounts: MintTo = MintTo {
-            mint: ctx.accounts.mint.to_account_info(),
-            to: ctx.accounts.token_account.to_account_info(),
-            authority: ctx.accounts.authority.to_account_info(),
+            mint: ctx.accounts.realm.to_account_info(),
+            to: ctx.accounts.recipient.to_account_info(),
+            authority: ctx.accounts.realm.to_account_info(),
         };
 
-        let cpi_program: AccountInfo = ctx.accounts.token_program.to_account_info();
+        let cpi_program: AccountInfo = ctx.accounts.realm.to_account_info();
         // Create the CpiContext we need for the request
         let cpi_ctx: CpiContext<MintTo> = CpiContext::new(cpi_program, cpi_accounts);
 
         // Execute anchor's helper function to mint tokens
-        token::mint_to(cpi_ctx, 10)?;
+        token::mint_to(cpi_ctx, 1)?;
 
         Ok(())
     }
@@ -49,31 +49,35 @@ pub mod karma {
 
 #[derive(Accounts)]
 pub struct InitializeRealm<'info> {
-    #[account(init, seeds = [b"realm".as_ref(), creator.key().as_ref()], bump, payer = creator, space =  Realm::LEN)]
-    pub realm: Account<'info, Realm>, // Is the realms program itself going to own the realm account? Not sure
+    #[account(init, seeds = [b"realm".as_ref(), creator.key().as_ref()], bump, payer = creator, space = Realm::LEN)]
+    pub realm: Account<'info, Realm>,
+    #[account(init, mint::decimals = 0, mint::authority = realm, payer = creator, seeds = [b"realm-mint".as_ref(), creator.key().as_ref()], bump)]
+    pub mint: Box<Account<'info, Mint>>,
     #[account(mut)]
     pub creator: Signer<'info>,
+    /// CHECK: This is the token that we want to mint
+    pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
+    pub rent: Sysvar<'info, Rent>,
 }
 
 #[derive(Accounts)]
-pub struct MintToken<'info> {
-    /// CHECK: This is the token that we want to mint
+pub struct Tip<'info> {
+    pub realm: Account<'info, Realm>,
     #[account(mut)]
-    pub mint: UncheckedAccount<'info>,
-    pub token_program: Program<'info, Token>,
-    /// CHECK: This is the token account that we want to mint tokens to
-    #[account(mut)]
-    pub token_account: UncheckedAccount<'info>,
-    /// CHECK: the authority of the mint account
-    #[account(mut)]
-    pub authority: AccountInfo<'info>,
+    pub tipper: Signer<'info>,
+    /// CHECK: make sure that init_if_needed is safe here
+    #[account(init_if_needed, payer = tipper, space = 8)]
+    pub recipient: Account<'info, TokenAccount>,
+    pub system_program: Program<'info, System>,
 }
 
 #[account]
 pub struct Realm {
     pub name: String,
     pub creator: Pubkey, // TODO: add some more fields
+    pub bump: u8,
+    pub mint_bump: u8,
 }
 
 // Kepping track of the space required
