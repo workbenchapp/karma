@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::{self, Mint, TokenAccount};
 use anchor_spl::token::{MintTo, Token};
 
@@ -29,16 +30,15 @@ pub mod karma {
     // TODO: tip instruction to be used to transfer 1 token to a given recipient
 
     pub fn tip(ctx: Context<Tip>) -> Result<()> {
-        // Create the MintTo struct for our context
-        let cpi_accounts: MintTo = MintTo {
-            mint: ctx.accounts.realm.to_account_info(),
-            to: ctx.accounts.recipient.to_account_info(),
-            authority: ctx.accounts.realm.to_account_info(),
-        };
-
-        let cpi_program: AccountInfo = ctx.accounts.realm.to_account_info();
         // Create the CpiContext we need for the request
-        let cpi_ctx: CpiContext<MintTo> = CpiContext::new(cpi_program, cpi_accounts);
+        let cpi_ctx = CpiContext::new(
+            ctx.accounts.realm.to_account_info(),
+            MintTo {
+                mint: ctx.accounts.mint.to_account_info(),
+                to: ctx.accounts.recipient_wallet.to_account_info(),
+                authority: ctx.accounts.realm.to_account_info(),
+            },
+        );
 
         // Execute anchor's helper function to mint tokens
         token::mint_to(cpi_ctx, 1)?;
@@ -64,12 +64,16 @@ pub struct InitializeRealm<'info> {
 #[derive(Accounts)]
 pub struct Tip<'info> {
     pub realm: Account<'info, Realm>,
+    pub mint: Box<Account<'info, Mint>>,
     #[account(mut)]
-    pub tipper: Signer<'info>,
+    pub authority: Signer<'info>,
     /// CHECK: make sure that init_if_needed is safe here
-    #[account(init_if_needed, payer = tipper, space = 8)]
-    pub recipient: Account<'info, TokenAccount>,
+    #[account(init_if_needed, payer = authority, associated_token::mint = mint, associated_token::authority = realm)]
+    pub recipient_wallet: Account<'info, TokenAccount>,
     pub system_program: Program<'info, System>,
+    pub token_program: Program<'info, Token>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
+    pub rent: Sysvar<'info, Rent>,
 }
 
 #[account]

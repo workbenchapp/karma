@@ -1,6 +1,7 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { ASSOCIATED_PROGRAM_ID } from "@project-serum/anchor/dist/cjs/utils/token";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import * as web3 from "@solana/web3.js";
 import idl from "../target/idl/karma.json";
 import { Karma } from "../target/types/karma";
@@ -23,12 +24,12 @@ describe("karma", () => {
     // Iterate through all possibilities to find a bump that kicks the address off the eliptic curve
     let [realmAccount, realmAccountBump] =
       await web3.PublicKey.findProgramAddress(
-        [Buffer.from("realm"), provider.wallet.publicKey.toBuffer()],
+        [Buffer.from("realm"), walletPubKey.toBuffer()],
         programID
       );
     let [mintAccount, mintAccountBump] =
       await web3.PublicKey.findProgramAddress(
-        [Buffer.from("realm-mint"), provider.wallet.publicKey.toBuffer()],
+        [Buffer.from("realm-mint"), walletPubKey.toBuffer()],
         programID
       );
     console.log(
@@ -36,7 +37,7 @@ describe("karma", () => {
         .initializeRealm("First Realm", realmAccountBump, mintAccountBump)
         .accounts({
           realm: realmAccount,
-          creator: provider.wallet.publicKey,
+          creator: walletPubKey,
           systemProgram: anchor.web3.SystemProgram.programId,
           mint: mintAccount,
           tokenProgram: TOKEN_PROGRAM_ID,
@@ -47,16 +48,40 @@ describe("karma", () => {
 
     // const realmAccount = await program.account.realm.fetch(realm.publicKey);
 
-    // assert.equal(realmAccount.creator.toBase58(), provider.wallet.publicKey.toBase58());
+    // assert.equal(realmAccount.creator.toBase58(), walletPubKey.toBase58());
     // assert.equal(realmAccount.name, 'First Realm');
   });
 
   it("Tipping", async () => {
     let [realmAccount, realmAccountBump] =
       await web3.PublicKey.findProgramAddress(
-        [Buffer.from("realm"), provider.wallet.publicKey.toBuffer()],
+        [Buffer.from("realm"), walletPubKey.toBuffer()],
         programID
       );
+    let [mintAccount, mintAccountBump] =
+      await web3.PublicKey.findProgramAddress(
+        [Buffer.from("realm-mint"), walletPubKey.toBuffer()],
+        programID
+      );
+    const associatedTokenAccount = await getAssociatedTokenAddress(
+      mintAccount,
+      walletPubKey
+    );
+    console.log(
+      await program.methods
+        .tip()
+        .accounts({
+          realm: realmAccount,
+          mint: mintAccount,
+          authority: walletPubKey,
+          recipientWallet: associatedTokenAccount,
+          systemProgram: web3.SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          associatedTokenProgram: ASSOCIATED_PROGRAM_ID,
+          rent: web3.SYSVAR_RENT_PUBKEY,
+        })
+        .rpc()
+    );
   });
 
   // it("Minting a new token.", async () => {
