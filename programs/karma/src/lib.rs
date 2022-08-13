@@ -32,7 +32,7 @@ pub mod karma {
     pub fn tip(ctx: Context<Tip>) -> Result<()> {
         // Create the CpiContext we need for the request
         let cpi_ctx = CpiContext::new(
-            ctx.accounts.realm.to_account_info(),
+            ctx.accounts.token_program.to_account_info(),
             MintTo {
                 mint: ctx.accounts.mint.to_account_info(),
                 to: ctx.accounts.recipient_wallet.to_account_info(),
@@ -67,8 +67,10 @@ pub struct Tip<'info> {
     pub mint: Box<Account<'info, Mint>>,
     #[account(mut)]
     pub authority: Signer<'info>,
+    #[account(mut)]
+    pub recipient: SystemAccount<'info>,
     /// CHECK: make sure that init_if_needed is safe here
-    #[account(init_if_needed, payer = authority, associated_token::mint = mint, associated_token::authority = realm)]
+    #[account(init_if_needed, payer = authority, associated_token::mint = mint, associated_token::authority = recipient)]
     pub recipient_wallet: Account<'info, TokenAccount>,
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,

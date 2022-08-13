@@ -63,6 +63,15 @@ describe("karma", () => {
         [Buffer.from("realm-mint"), walletPubKey.toBuffer()],
         programID
       );
+    const kp = anchor.web3.Keypair.fromSecretKey(
+      new Uint8Array([
+        90, 216, 160, 20, 249, 77, 180, 167, 77, 225, 109, 170, 123, 65, 60,
+        182, 176, 8, 248, 24, 185, 21, 103, 214, 189, 129, 188, 7, 131, 239,
+        213, 47, 252, 175, 76, 107, 180, 195, 141, 165, 48, 133, 24, 86, 150,
+        22, 33, 82, 162, 255, 97, 53, 162, 2, 143, 11, 48, 209, 30, 29, 68, 89,
+        221, 160,
+      ])
+    );
     const associatedTokenAccount = await getAssociatedTokenAddress(
       mintAccount,
       walletPubKey
@@ -74,6 +83,7 @@ describe("karma", () => {
           realm: realmAccount,
           mint: mintAccount,
           authority: walletPubKey,
+          recipient: walletPubKey,
           recipientWallet: associatedTokenAccount,
           systemProgram: web3.SystemProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
