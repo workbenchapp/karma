@@ -3,6 +3,7 @@ import { Program } from "@project-serum/anchor";
 import { ASSOCIATED_PROGRAM_ID } from "@project-serum/anchor/dist/cjs/utils/token";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import * as web3 from "@solana/web3.js";
+import { step } from "mocha-steps";
 import idl from "../target/idl/karma.json";
 import { Karma } from "../target/types/karma";
 
@@ -20,7 +21,7 @@ describe("karma", () => {
 
   const programID = new web3.PublicKey(idl.metadata.address);
 
-  it("Creating a new realm.", async () => {
+  step("Creating a new realm.", async () => {
     // Iterate through all possibilities to find a bump that kicks the address off the eliptic curve
     let [realmAccount, realmAccountBump] =
       await web3.PublicKey.findProgramAddress(
@@ -45,6 +46,10 @@ describe("karma", () => {
         })
         .rpc()
     );
+    console.log({
+      mintAccount: mintAccount.toJSON(),
+      realmAccount: realmAccount.toJSON(),
+    });
 
     // const realmAccount = await program.account.realm.fetch(realm.publicKey);
 
@@ -52,7 +57,7 @@ describe("karma", () => {
     // assert.equal(realmAccount.name, 'First Realm');
   });
 
-  it("Tipping", async () => {
+  step("Tipping", async () => {
     let [realmAccount, realmAccountBump] =
       await web3.PublicKey.findProgramAddress(
         [Buffer.from("realm"), walletPubKey.toBuffer()],
@@ -63,19 +68,16 @@ describe("karma", () => {
         [Buffer.from("realm-mint"), walletPubKey.toBuffer()],
         programID
       );
-    const kp = anchor.web3.Keypair.fromSecretKey(
-      new Uint8Array([
-        90, 216, 160, 20, 249, 77, 180, 167, 77, 225, 109, 170, 123, 65, 60,
-        182, 176, 8, 248, 24, 185, 21, 103, 214, 189, 129, 188, 7, 131, 239,
-        213, 47, 252, 175, 76, 107, 180, 195, 141, 165, 48, 133, 24, 86, 150,
-        22, 33, 82, 162, 255, 97, 53, 162, 2, 143, 11, 48, 209, 30, 29, 68, 89,
-        221, 160,
-      ])
-    );
     const associatedTokenAccount = await getAssociatedTokenAddress(
       mintAccount,
       walletPubKey
     );
+    console.log({
+      mintAccount: mintAccount.toJSON(),
+      realmAccount: realmAccount.toJSON(),
+      associatedTokenAccount: associatedTokenAccount.toJSON(),
+      walletPubKey: walletPubKey.toJSON(),
+    });
     console.log(
       await program.methods
         .tip()

@@ -30,14 +30,19 @@ pub mod karma {
     // TODO: tip instruction to be used to transfer 1 token to a given recipient
 
     pub fn tip(ctx: Context<Tip>) -> Result<()> {
+        let creator_key = ctx.accounts.realm.creator.key();
+        let bump_bytes = ctx.accounts.realm.bump.to_le_bytes();
+        let inner = vec![b"realm".as_ref(), creator_key.as_ref(), bump_bytes.as_ref()];
+        let outer = vec![inner.as_slice()];
         // Create the CpiContext we need for the request
-        let cpi_ctx = CpiContext::new(
+        let cpi_ctx = CpiContext::new_with_signer(
             ctx.accounts.token_program.to_account_info(),
             MintTo {
                 mint: ctx.accounts.mint.to_account_info(),
                 to: ctx.accounts.recipient_wallet.to_account_info(),
                 authority: ctx.accounts.realm.to_account_info(),
             },
+            outer.as_slice(),
         );
 
         // Execute anchor's helper function to mint tokens
@@ -64,10 +69,10 @@ pub struct InitializeRealm<'info> {
 #[derive(Accounts)]
 pub struct Tip<'info> {
     pub realm: Account<'info, Realm>,
+    #[account(mut)]
     pub mint: Box<Account<'info, Mint>>,
     #[account(mut)]
     pub authority: Signer<'info>,
-    #[account(mut)]
     pub recipient: SystemAccount<'info>,
     /// CHECK: make sure that init_if_needed is safe here
     #[account(init_if_needed, payer = authority, associated_token::mint = mint, associated_token::authority = recipient)]
