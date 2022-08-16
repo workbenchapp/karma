@@ -28,13 +28,14 @@ export default defineConfig({
     "process.env": process.env ?? {},
   },
   build: {
-    target: "esnext",
+    target: ["es2020"],
     rollupOptions: {
       plugins: [nodePolyfills({ crypto: true })],
     },
   },
   optimizeDeps: {
     esbuildOptions: {
+      target: "es2020",
       plugins: [NodeGlobalsPolyfillPlugin({ buffer: true })],
     },
   },

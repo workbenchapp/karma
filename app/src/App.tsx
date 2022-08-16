@@ -1,6 +1,6 @@
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import "./lib/Davatar.css";
-import { Davatar } from "./lib/DavatarReact";
+import "./lib/DProfile.css";
+import { DProfile } from "./lib/DProfileReact";
 
 export const App: React.FC = () => {
   return (
@@ -11,7 +11,7 @@ export const App: React.FC = () => {
       <div className="grid place-items-center flex-1">
         <div>
           <div className="w-25 h-25">
-            <Davatar />
+            <DProfile />
           </div>
         </div>
       </div>
