@@ -1,6 +1,6 @@
 {
   "name": "dprofile",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build --config ./vite.config.lib.ts",
@@ -17,7 +17,8 @@
     ".": {
       "import": "./dist/dprofile.es.js",
       "require": "./dist/dprofile.umd.js"
-    }
+    },
+    "./dist": "./dist"
   },
   "dependencies": {
     "@floating-ui/react-dom": "^1.0.0",
