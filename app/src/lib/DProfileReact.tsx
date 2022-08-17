@@ -37,7 +37,13 @@ export const DProfile: React.FC = (props) => {
   const [changeOpen, setChangeOpen] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [dProfile, setDProfile] = useState<DProfileNft | undefined>(undefined);
-  const [avatars, setAvatars] = useState<string[] | undefined>(undefined);
+  const [avatars, setAvatars] = useState<
+    | {
+        name: string;
+        avatar: string;
+      }[]
+    | undefined
+  >(undefined);
   const [newUsername, setNewUsername] = useState<string | undefined>(undefined);
 
   const update = async ({
@@ -169,19 +175,19 @@ export const DProfile: React.FC = (props) => {
               />
             </button>
             {avatars &&
-              avatars?.map((uri) => (
+              avatars?.map(({ avatar, name }) => (
                 <button
                   className={`dprofile__popper-item ${
-                    uri === dProfile?.json?.avatar
+                    avatar === dProfile?.json?.avatar
                       ? "dprofile__popper-active-item"
                       : ""
                   }`}
-                  key={uri}
-                  onClick={() => onDavatarSelect(uri)}
+                  key={`${name}-${avatar}`}
+                  onClick={() => onDavatarSelect(avatar)}
                 >
                   <img
                     className="dprofile__popper-item-img"
-                    src={uri}
+                    src={avatar}
                     draggable="false"
                   />
                 </button>

@@ -29,7 +29,7 @@ export type DProfileNft = Nft & {
 export class DProfileCore {
   client: Metaplex;
   dprofile?: DProfileNft;
-  avatars?: string[];
+  avatars?: { name: string; avatar: string }[];
   constructor(
     private connection: Connection,
     private identity: Keypair | WalletAdapter
@@ -82,8 +82,14 @@ export class DProfileCore {
     this.dprofile = dprofileNft as DProfileNft | undefined;
 
     this.avatars = [
-      ...(this.dprofile?.json?.previousAvatars ?? []),
-      ...otherNfts.map((nft) => nft.json?.image!),
+      ...(this.dprofile?.json?.previousAvatars ?? []).map((v) => ({
+        name: "dprofile",
+        avatar: v,
+      })),
+      ...otherNfts.map((nft) => ({
+        name: nft.name,
+        avatar: nft.json?.image!,
+      })),
     ];
   }
 
