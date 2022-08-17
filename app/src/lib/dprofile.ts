@@ -58,14 +58,21 @@ export class DProfileCore {
       .run();
 
     // concurrently fetch the metadata for all NFTs
-    const nfts = await Promise.all(
-      lazyNfts.map((nft) =>
-        this.client
-          .nfts()
-          .loadNft(nft as LazyNft)
-          .run()
+    const nfts = (
+      await Promise.all(
+        lazyNfts.map(async (nft) => {
+          try {
+            const res = await this.client
+              .nfts()
+              .loadNft(nft as LazyNft)
+              .run();
+            return res;
+          } catch (e) {
+            return undefined;
+          }
+        })
       )
-    );
+    ).filter((nft) => !!nft) as Nft[];
 
     const otherNfts = nfts.filter((nft) => nft.name !== "dprofile");
     const dprofileNft = nfts.find((nft) => nft.name === "dprofile");
@@ -132,11 +139,16 @@ export class DProfileCore {
   }
 
   async initialize() {
+    const metadata = await this.client
+      .nfts()
+      .uploadMetadata({} as DProfile)
+      .run();
+
     await this.client
       .nfts()
       .create({
         isMutable: true,
-        uri: "",
+        uri: metadata.uri,
         name: "dprofile",
         sellerFeeBasisPoints: 0,
       })

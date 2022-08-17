@@ -1,6 +1,6 @@
 {
   "name": "dprofile",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build --config ./vite.config.lib.ts",
