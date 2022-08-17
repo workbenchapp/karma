@@ -10,9 +10,7 @@ export const App: React.FC = () => {
       </div>
       <div className="grid place-items-center flex-1">
         <div>
-          <div className="w-25 h-25">
-            <DProfile />
-          </div>
+          <DProfile size={128} />
         </div>
       </div>
     </div>

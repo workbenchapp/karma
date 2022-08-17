@@ -10,7 +10,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import OutsideClickHandler from "react-outside-click-handler";
 import { DProfileCore, DProfileNft } from "./dprofile";
 
-export const DProfile: React.FC = (props) => {
+export const DProfile: React.FC<{ size?: number }> = (props) => {
   const { connection } = useConnection();
   const adapter = useWallet();
   const { x, y, reference, floating, strategy } = useFloating({
@@ -91,9 +91,10 @@ export const DProfile: React.FC = (props) => {
   }, [adapter]);
 
   return (
-    <>
+    <div className="dprofile__container">
       <div
         className="dprofile__root"
+        style={{ width: `${props.size}px`, height: `${props.size}px` }}
         ref={reference}
         onClick={() => setChangeOpen(true)}
       >
@@ -195,6 +196,6 @@ export const DProfile: React.FC = (props) => {
           </div>
         </div>
       </OutsideClickHandler>
-    </>
+    </div>
   );
 };
