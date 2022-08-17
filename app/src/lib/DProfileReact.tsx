@@ -123,7 +123,7 @@ export const DProfile: React.FC = (props) => {
           ref={floating}
         >
           <div className="dprofile__popper-username-container">
-            <p>Username</p>
+            <span>Username</span>
             <input
               value={newUsername ?? (dProfile?.json?.username || "")}
               onChange={(ev) => setNewUsername(ev.target.value)}
