@@ -2,6 +2,7 @@ import {
   autoPlacement,
   autoUpdate,
   offset,
+  shift,
   useFloating,
 } from "@floating-ui/react-dom";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
@@ -14,10 +15,14 @@ export const DProfile: React.FC = (props) => {
   const adapter = useWallet();
   const { x, y, reference, floating, strategy } = useFloating({
     placement: "right-start",
+    strategy: "fixed",
     middleware: [
       autoPlacement(),
       offset({
         mainAxis: 12,
+      }),
+      shift({
+        crossAxis: true,
       }),
     ],
     whileElementsMounted: autoUpdate,
