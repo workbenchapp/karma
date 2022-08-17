@@ -1,5 +1,6 @@
 .dprofile__container {
   all: revert;
+  @apply font-sans bg-surface-400 p-3 px-8 rounded-xl;
   *,
   ::before,
   ::after {

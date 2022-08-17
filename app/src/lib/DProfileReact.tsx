@@ -5,14 +5,29 @@ import {
   shift,
   useFloating,
 } from "@floating-ui/react-dom";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import {
+  useAnchorWallet,
+  useConnection,
+  useWallet,
+} from "@solana/wallet-adapter-react";
+import { PublicKey } from "@solana/web3.js";
 import { useEffect, useMemo, useRef, useState } from "react";
 import OutsideClickHandler from "react-outside-click-handler";
 import { DProfileCore, DProfileNft } from "./dprofile";
+// import { Karma } from "./karma";
 
-export const DProfile: React.FC<{ size?: number }> = (props) => {
+export const DProfile: React.FC<{
+  size?: number;
+  creator: PublicKey;
+  user?: PublicKey;
+  showUsername: boolean;
+  showKarma: boolean;
+  showAvatar: boolean;
+  showTipButton: boolean;
+}> = (props) => {
   const { connection } = useConnection();
   const adapter = useWallet();
+  const anchorWallet = useAnchorWallet();
   const { x, y, reference, floating, strategy } = useFloating({
     placement: "right-start",
     strategy: "fixed",
@@ -33,6 +48,7 @@ export const DProfile: React.FC<{ size?: number }> = (props) => {
     () => new DProfileCore(connection, adapter),
     [connection, adapter]
   );
+  // const [karmaClient, setKarmaClient] = useState<Karma | undefined>(undefined);
 
   const [changeOpen, setChangeOpen] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -45,6 +61,7 @@ export const DProfile: React.FC<{ size?: number }> = (props) => {
     | undefined
   >(undefined);
   const [newUsername, setNewUsername] = useState<string | undefined>(undefined);
+  const [tips, setTips] = useState<bigint | undefined>(undefined);
 
   const update = async ({
     newAvatar,
@@ -61,6 +78,12 @@ export const DProfile: React.FC<{ size?: number }> = (props) => {
     await client.fetchDProfile();
     setDProfile(client.dprofile);
     setAvatars(client.avatars);
+    // await karmaClient!.init();
+    try {
+      // setTips(await karmaClient!.getBalance());
+    } catch (e) {
+      console.error("failed to get balance: ", e);
+    }
     setProcessing(false);
   };
 
@@ -81,41 +104,83 @@ export const DProfile: React.FC<{ size?: number }> = (props) => {
     onDavatarSelect(image!);
   };
 
+  const onTip = () => {
+    // karmaClient!.tip(props.user || adapter.publicKey!);
+  };
+
   useEffect(() => {
     (async () => {
       if (!adapter.publicKey) return;
+      // const newKarmaClient = new Karma(
+      //   connection,
+      //   adapter.publicKey!,
+      //   anchorWallet!
+      // );
+      // await newKarmaClient.init();
+      // console.log(newKarmaClient);
+      // setKarmaClient(newKarmaClient);
       await client.fetchDProfile();
       setAvatars(client.avatars!);
       setDProfile(client.dprofile);
     })();
   }, [adapter]);
 
+  const onInitialize = async () => {
+    // const realm = await karmaClient!.newRealm();
+    console.log(realm);
+  };
+
   return (
     <div className="dprofile__container">
-      <div
-        className="dprofile__root"
-        style={{ width: `${props.size}px`, height: `${props.size}px` }}
-        ref={reference}
-        onClick={() => setChangeOpen(true)}
-      >
-        <img className="dprofile__img" src={dProfile?.json?.avatar} />
-        <div className="dprofile__img-overlay">
-          <span className="dprofile__img-overlay-text">Change</span>
-        </div>
-        {processing && (
-          <div className="dprofile__img-processing-overlay animate-spin">
-            <svg
-              style={{ width: "24px", height: "24px" }}
-              viewBox="0 0 24 24"
-              className="animate-spin"
-            >
-              <path
-                fill="currentColor"
-                d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z"
-              />
-            </svg>
+      <div className="flex gap-4 items-center">
+        <div
+          className="dprofile__root"
+          style={{ width: `${props.size}px`, height: `${props.size}px` }}
+          ref={reference}
+          onClick={() => setChangeOpen(true)}
+        >
+          <img className="dprofile__img" src={dProfile?.json?.avatar} />
+          <div className="dprofile__img-overlay">
+            <span className="dprofile__img-overlay-text">Change</span>
           </div>
-        )}
+          {processing && (
+            <div className="dprofile__img-processing-overlay animate-spin">
+              <svg
+                style={{ width: "24px", height: "24px" }}
+                viewBox="0 0 24 24"
+                className="animate-spin"
+              >
+                <path
+                  fill="currentColor"
+                  d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z"
+                />
+              </svg>
+            </div>
+          )}
+        </div>
+        <div>
+          {props.showUsername && (
+            <p className="text-4xl">{dProfile?.json?.username}</p>
+          )}
+          {props.showKarma && (
+            <p className="text-lg text-gray-500">
+              {tips?.toString() ?? 0} Tips
+              {props.showTipButton && (
+                <button className="p-3" onClick={onTip}>
+                  <svg
+                    style={{ width: "24px", height: "24px" }}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"
+                    />
+                  </svg>
+                </button>
+              )}
+            </p>
+          )}
+        </div>
       </div>
       <OutsideClickHandler onOutsideClick={() => setChangeOpen(false)}>
         <div
