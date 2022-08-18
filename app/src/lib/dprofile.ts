@@ -83,7 +83,6 @@ export class DProfileCore {
 
     const otherNfts = nfts.filter((nft) => nft.name !== "dprofile");
     const dprofileNft = nfts.find((nft) => nft.name === "dprofile");
-    console.log({ dprofileNft, otherNfts });
 
     // set the DProfile NFT
     this.dprofile = dprofileNft as DProfileNft | undefined;

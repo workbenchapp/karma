@@ -19,7 +19,6 @@ function cssVarRgbHelper(cssVariable: string) {
 }
 
 export default defineConfig({
-  preflight: false,
   theme: {
     extend: {
       fontFamily: {

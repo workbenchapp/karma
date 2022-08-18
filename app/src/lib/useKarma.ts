@@ -27,6 +27,8 @@ export const useKarma = (creator: PublicKey) => {
     karma?.tip(user);
   };
 
+  const newRealm = async () => karma?.newRealm();
+
   useEffect(() => {
     (async () => {
       if (!karma) return;
@@ -35,5 +37,5 @@ export const useKarma = (creator: PublicKey) => {
     })();
   }, [karma]);
 
-  return { tips, karma, tip };
+  return { tips, karma, tip, newRealm };
 };
