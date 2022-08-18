@@ -1,6 +1,7 @@
 import { NodeGlobalsPolyfillPlugin } from "@esbuild-plugins/node-globals-polyfill";
 import react from "@vitejs/plugin-react";
 import path from "path";
+import { externals } from "rollup-plugin-node-externals";
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 import WindiCSS from "vite-plugin-windicss";
@@ -20,14 +21,14 @@ export default defineConfig({
     dts({
       insertTypesEntry: true,
     }),
+    externals(),
   ],
   build: {
     target: "esnext",
     rollupOptions: {
-      external: (() => {
-        console.log(Object.keys(dependencies));
-        return Object.keys(dependencies);
-      })(),
+      external: [
+        ...Object.keys(dependencies),
+      ],
       output: {
         globals: {
           react: "React",

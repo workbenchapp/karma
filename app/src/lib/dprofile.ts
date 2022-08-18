@@ -22,6 +22,11 @@ export type DProfile = {
   previousAvatars?: string[];
 } & JsonMetadata;
 
+export type UpdatePayload = Partial<{
+  avatar: string | File;
+  username: string;
+}>;
+
 export type DProfileNft = Nft & {
   json: DProfile | null;
 };
@@ -29,7 +34,9 @@ export type DProfileNft = Nft & {
 export class DProfileCore {
   client: Metaplex;
   dprofile?: DProfileNft;
-  avatars?: { name: string; avatar: string }[];
+  avatars?: string[];
+  nftImages?: string[];
+
   constructor(
     private connection: Connection,
     private identity: Keypair | WalletAdapter
@@ -76,89 +83,62 @@ export class DProfileCore {
 
     const otherNfts = nfts.filter((nft) => nft.name !== "dprofile");
     const dprofileNft = nfts.find((nft) => nft.name === "dprofile");
-    console.log({ otherNfts, nfts });
+    console.log({ dprofileNft, otherNfts });
 
     // set the DProfile NFT
     this.dprofile = dprofileNft as DProfileNft | undefined;
 
-    this.avatars = [
-      ...(this.dprofile?.json?.previousAvatars ?? []).map((v) => ({
-        name: "dprofile",
-        avatar: v,
-      })),
-      ...otherNfts.map((nft) => ({
-        name: nft.name,
-        avatar: nft.json?.image!,
-      })),
-    ];
+    this.avatars = [...new Set(this.dprofile?.json?.previousAvatars)] ?? [];
+    this.nftImages = otherNfts
+      .map((nft) => nft.json?.image)
+      .filter((v) => !!v) as string[];
   }
 
-  async update({
-    newAvatar,
-    newUsername,
-  }: {
-    newUsername?: string;
-    newAvatar?: string;
-  }) {
-    if (!this.dprofile)
-      throw new Error("you do not have a dprofile initialized");
+  async update({ avatar, username }: UpdatePayload) {
+    const newMetadata = { ...this.dprofile?.json };
 
-    const newMetadata = { ...this.dprofile.json };
-
-    if (newAvatar) {
-      const uris = this.dprofile.json?.previousAvatars ?? [];
-      if (uris.indexOf(newAvatar) === -1) {
-        uris.push(newAvatar);
-        console.log(`added new dprofile to list: ${newAvatar}`);
+    if (avatar) {
+      if (avatar instanceof File) {
+        const metaplexFile = await toMetaplexFileFromBrowser(avatar);
+        avatar = await this.client.storage().upload(metaplexFile);
+      }
+      const uris = this.dprofile?.json?.previousAvatars ?? [];
+      if (uris.indexOf(avatar) === -1) {
+        uris.push(avatar);
+        console.log(`added new dprofile to list: ${avatar}`);
       }
       newMetadata.previousAvatars = uris;
-      newMetadata.avatar = newAvatar;
-      newMetadata.image = newAvatar;
+      newMetadata.avatar = avatar;
+      newMetadata.image = avatar;
     }
 
-    if (newUsername) {
-      newMetadata.username = newUsername;
+    if (username) {
+      newMetadata.username = username;
     }
 
-    return this.client
-      .nfts()
-      .update(this.dprofile, {
-        uri: (await this.client.nfts().uploadMetadata(newMetadata).run()).uri,
-      })
-      .run();
-  }
+    if (!this.dprofile) {
+      const metadata = await this.client
+        .nfts()
+        .uploadMetadata({
+          image: avatar,
+          avatar,
+          username,
+        } as DProfile)
+        .run();
 
-  async uploadNew(file: File) {
-    if (!this.dprofile)
-      throw new Error("You do not have a dprofile initialized");
-    const metaplexFile = await toMetaplexFileFromBrowser(file);
-    const url = await this.client.storage().upload(metaplexFile);
-    const metadata = await this.client
-      .nfts()
-      .uploadMetadata({
-        ...this.dprofile.json,
-        image: url,
-        avatar: url,
-      } as DProfile)
-      .run();
-    return metadata;
-  }
-
-  async initialize() {
-    const metadata = await this.client
-      .nfts()
-      .uploadMetadata({} as DProfile)
-      .run();
-
-    await this.client
-      .nfts()
-      .create({
+      return this.client.nfts().create({
         isMutable: true,
         uri: metadata.uri,
         name: "dprofile",
         sellerFeeBasisPoints: 0,
-      })
-      .run();
-    await this.fetchDProfile();
+      });
+    } else {
+      return this.client
+        .nfts()
+        .update(this.dprofile, {
+          uri: (await this.client.nfts().uploadMetadata(newMetadata).run()).uri,
+        })
+        .run();
+    }
   }
 }

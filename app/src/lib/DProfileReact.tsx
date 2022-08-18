@@ -5,29 +5,29 @@ import {
   shift,
   useFloating,
 } from "@floating-ui/react-dom";
-import {
-  useAnchorWallet,
-  useConnection,
-  useWallet,
-} from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import OutsideClickHandler from "react-outside-click-handler";
-import { DProfileCore, DProfileNft } from "./dprofile";
-// import { Karma } from "./karma";
+import { useDProfile } from "./useDProfile";
+import { useKarma } from "./useKarma";
 
-export const DProfile: React.FC<{
+export const EditableDProfile: React.FC<{
   size?: number;
   creator: PublicKey;
   user?: PublicKey;
-  showUsername: boolean;
-  showKarma: boolean;
-  showAvatar: boolean;
-  showTipButton: boolean;
-}> = (props) => {
-  const { connection } = useConnection();
-  const adapter = useWallet();
-  const anchorWallet = useAnchorWallet();
+  showAvatar?: boolean;
+  showUsername?: boolean;
+  showKarma?: boolean;
+  showTipButton?: boolean;
+}> = ({
+  size = 16,
+  creator,
+  user,
+  showAvatar = true,
+  showUsername = false,
+  showKarma = false,
+  showTipButton = false,
+}) => {
   const { x, y, reference, floating, strategy } = useFloating({
     placement: "right-start",
     strategy: "fixed",
@@ -44,102 +44,23 @@ export const DProfile: React.FC<{
   });
   const uploadInput = useRef<HTMLInputElement | null>(null);
 
-  const client = useMemo(
-    () => new DProfileCore(connection, adapter),
-    [connection, adapter]
-  );
-  // const [karmaClient, setKarmaClient] = useState<Karma | undefined>(undefined);
-
   const [changeOpen, setChangeOpen] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [dProfile, setDProfile] = useState<DProfileNft | undefined>(undefined);
-  const [avatars, setAvatars] = useState<
-    | {
-        name: string;
-        avatar: string;
-      }[]
-    | undefined
-  >(undefined);
   const [newUsername, setNewUsername] = useState<string | undefined>(undefined);
-  const [tips, setTips] = useState<bigint | undefined>(undefined);
-
-  const update = async ({
-    newAvatar,
-    newUsername,
-  }: {
-    newAvatar?: string;
-    newUsername?: string;
-  }) => {
-    setProcessing(true);
-    if (!client.dprofile) {
-      await client.initialize();
-    }
-    await client.update({ newAvatar, newUsername });
-    await client.fetchDProfile();
-    setDProfile(client.dprofile);
-    setAvatars(client.avatars);
-    // await karmaClient!.init();
-    try {
-      // setTips(await karmaClient!.getBalance());
-    } catch (e) {
-      console.error("failed to get balance: ", e);
-    }
-    setProcessing(false);
-  };
-
-  const onDavatarSelect = async (address: string) => {
-    update({ newAvatar: address });
-  };
-
-  const onFileSelect = async (files: File[]) => {
-    setProcessing(true);
-    const target = files[0];
-    if (!target) return;
-    if (!client.dprofile) {
-      await client.initialize();
-    }
-    const {
-      metadata: { image },
-    } = await client.uploadNew(target);
-    onDavatarSelect(image!);
-  };
-
-  const onTip = () => {
-    // karmaClient!.tip(props.user || adapter.publicKey!);
-  };
-
-  useEffect(() => {
-    (async () => {
-      if (!adapter.publicKey) return;
-      // const newKarmaClient = new Karma(
-      //   connection,
-      //   adapter.publicKey!,
-      //   anchorWallet!
-      // );
-      // await newKarmaClient.init();
-      // console.log(newKarmaClient);
-      // setKarmaClient(newKarmaClient);
-      await client.fetchDProfile();
-      setAvatars(client.avatars!);
-      setDProfile(client.dprofile);
-    })();
-  }, [adapter]);
-
-  const onInitialize = async () => {
-    // const realm = await karmaClient!.newRealm();
-    console.log(realm);
-  };
+  const { avatar, avatarsList, client, nftImagesList, update, username } =
+    useDProfile();
+  const { tip, tips } = useKarma(creator);
 
   return (
     <div className="dprofile__container">
       <div className="flex gap-4 items-center">
         <div
           className="dprofile__root"
-          style={{ width: `${props.size}px`, height: `${props.size}px` }}
+          style={{ width: `${size}px`, height: `${size}px` }}
           ref={reference}
           onClick={() => setChangeOpen(true)}
         >
-          <img className="dprofile__img" src={dProfile?.json?.avatar} />
+          <img className="dprofile__img" src={avatar} />
           <div className="dprofile__img-overlay">
             <span className="dprofile__img-overlay-text">Change</span>
           </div>
@@ -158,15 +79,18 @@ export const DProfile: React.FC<{
             </div>
           )}
         </div>
-        <div>
-          {props.showUsername && (
-            <p className="text-4xl">{dProfile?.json?.username}</p>
+        <div className="flex flex-col gap-2">
+          {showUsername && (
+            <p style={{ fontSize: `${size / 5}px` }}>{username}</p>
           )}
-          {props.showKarma && (
-            <p className="text-lg text-gray-500">
+          {showKarma && (
+            <p className="text-gray-500" style={{ fontSize: `${size / 8}px` }}>
               {tips?.toString() ?? 0} Tips
-              {props.showTipButton && (
-                <button className="p-3" onClick={onTip}>
+              {showTipButton && (
+                <button
+                  className="dprofile__tip_button"
+                  onClick={() => tip(user!)}
+                >
                   <svg
                     style={{ width: "24px", height: "24px" }}
                     viewBox="0 0 24 24"
@@ -197,24 +121,23 @@ export const DProfile: React.FC<{
           <div className="dprofile__popper-username-container">
             <span>Username</span>
             <input
-              value={newUsername ?? (dProfile?.json?.username || "")}
+              value={newUsername ?? (username || "")}
               onChange={(ev) => setNewUsername(ev.target.value)}
               className="dprofile__popper-username-input"
             />
-            {newUsername !== undefined &&
-              newUsername !== dProfile?.json?.username && (
-                <button onClick={() => update({ newUsername })}>
-                  <svg
-                    style={{ width: "24px", height: "24px" }}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"
-                    />
-                  </svg>
-                </button>
-              )}
+            {newUsername !== undefined && newUsername !== username && (
+              <button onClick={() => update({ username })}>
+                <svg
+                  style={{ width: "24px", height: "24px" }}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"
+                  />
+                </svg>
+              </button>
+            )}
           </div>
           <div className={`dprofile__popper-avatars`}>
             <button
@@ -235,25 +158,26 @@ export const DProfile: React.FC<{
                 type="file"
                 accept="image/*"
                 className="dprofile__input"
-                onChange={(ev) =>
-                  onFileSelect(Array.from(ev.currentTarget.files!))
-                }
+                onChange={(ev) => update({ avatar: ev.target.files?.[0] })}
               />
             </button>
-            {avatars &&
-              avatars?.map(({ avatar, name }) => (
+            {(avatarsList || nftImagesList) &&
+              (
+                [
+                  ...(avatarsList ?? [])?.map((v) => [v, false]),
+                  ...(nftImagesList ?? []).map((v) => [v, true]),
+                ] as [string, boolean][]
+              )?.map(([picture, isNFT]) => (
                 <button
                   className={`dprofile__popper-item ${
-                    avatar === dProfile?.json?.avatar
-                      ? "dprofile__popper-active-item"
-                      : ""
+                    picture === avatar ? "dprofile__popper-active-item" : ""
                   }`}
-                  key={`${name}-${avatar}`}
-                  onClick={() => onDavatarSelect(avatar)}
+                  key={`${picture}-${isNFT}`}
+                  onClick={() => update({ avatar: picture })}
                 >
                   <img
                     className="dprofile__popper-item-img"
-                    src={avatar}
+                    src={picture}
                     draggable="false"
                   />
                 </button>

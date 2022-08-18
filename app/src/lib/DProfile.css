@@ -70,6 +70,14 @@
   @apply rounded-md flex items-center justify-center border-2 border-dashed border-white/30 bg-transparent hover:bg-white/10 w-25 h-25;
 }
 
+.dprofile__tip_button {
+  @apply p-2 inline-block align-middle cursor-pointer hover:bg-white/10 rounded-md ml-2;
+
+  svg {
+    @apply inline-block align-middle;
+  }
+}
+
 ::-webkit-scrollbar {
   width: 10px;
 }

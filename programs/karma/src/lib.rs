@@ -3,7 +3,7 @@ use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::{self, Mint, TokenAccount};
 use anchor_spl::token::{MintTo, Token};
 
-declare_id!("HvE81vvHBa7bZ3bkJS4Zm4mZc1TaX2vdb5U1V5eiNuVp");
+declare_id!("CcuuujtRRoaQV9zdw8P8puFrGrVW5EddWEkHBRbGymHy");
 
 #[program]
 pub mod karma {
