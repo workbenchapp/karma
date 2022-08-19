@@ -1,17 +1,17 @@
 import { NodeGlobalsPolyfillPlugin } from "@esbuild-plugins/node-globals-polyfill";
 import react from "@vitejs/plugin-react";
 import path from "path";
-import depsExternal from "rollup-plugin-node-externals";
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 import WindiCSS from "vite-plugin-windicss";
-import { dependencies } from "./package.json";
+import { dependencies, devDependencies } from "./package.json";
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    depsExternal(),
-    react(),
+    react({
+      jsxRuntime: "classic",
+    }),
     WindiCSS({
       scan: {
         fileExtensions: ["html", "js", "ts", "jsx", "tsx"],
@@ -21,12 +21,10 @@ export default defineConfig({
       insertTypesEntry: true,
     }),
   ],
-  define: {
-    "process.env": process.env ?? {},
-  },
   build: {
+    target: "esnext",
     rollupOptions: {
-      external: Object.keys(dependencies),
+      external: [...Object.keys(dependencies), ...Object.keys(devDependencies)],
       output: {
         globals: {
           react: "React",
@@ -36,13 +34,14 @@ export default defineConfig({
     },
     lib: {
       entry: path.resolve(__dirname, "src/lib/index.ts"),
-      name: "davatar",
+      name: "dprofile",
       formats: ["es", "umd"],
-      fileName: (format) => `davatar.${format}.js`,
+      fileName: (format) => `dprofile.${format}.js`,
     },
   },
   optimizeDeps: {
     esbuildOptions: {
+      target: "esnext",
       plugins: [NodeGlobalsPolyfillPlugin({ buffer: true })],
     },
   },
