@@ -9,7 +9,7 @@ import {
   WalletAdapter,
   walletAdapterIdentity,
 } from "@metaplex-foundation/js";
-import { Connection, Keypair } from "@solana/web3.js";
+import * as web3 from "@solana/web3.js";
 
 /**
  * The metadata structure for the DProfile NFT
@@ -38,8 +38,8 @@ export class DProfileCore {
   nftImages?: string[];
 
   constructor(
-    private connection: Connection,
-    private identity: Keypair | WalletAdapter
+    private connection: web3.Connection,
+    private identity: web3.Keypair | WalletAdapter
   ) {
     this.client = Metaplex.make(this.connection).use(
       bundlrStorage({
@@ -48,7 +48,7 @@ export class DProfileCore {
         timeout: 60000,
       })
     );
-    if (identity instanceof Keypair) {
+    if (identity instanceof web3.Keypair) {
       this.client.use(keypairIdentity(identity));
     } else {
       this.client.use(walletAdapterIdentity(identity));

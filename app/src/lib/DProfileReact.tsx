@@ -5,7 +5,7 @@ import {
   shift,
   useFloating,
 } from "@floating-ui/react-dom";
-import { PublicKey } from "@solana/web3.js";
+import * as web3 from "@solana/web3.js";
 import { useRef, useState } from "react";
 import OutsideClickHandler from "react-outside-click-handler";
 import { useDProfile } from "./useDProfile";
@@ -13,8 +13,8 @@ import { useKarma } from "./useKarma";
 
 export const EditableDProfile: React.FC<{
   size?: number;
-  creator: PublicKey;
-  user?: PublicKey;
+  creator: web3.PublicKey;
+  user?: web3.PublicKey;
   showAvatar?: boolean;
   showUsername?: boolean;
   showKarma?: boolean;

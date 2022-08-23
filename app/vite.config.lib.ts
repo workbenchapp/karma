@@ -24,7 +24,11 @@ export default defineConfig({
   build: {
     target: "esnext",
     rollupOptions: {
-      external: [...Object.keys(dependencies), ...Object.keys(devDependencies)],
+      external: [
+        ...Object.keys(dependencies),
+        ...Object.keys(devDependencies),
+        "@solana/spl-token",
+      ],
       output: {
         globals: {
           react: "React",
@@ -40,6 +44,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
+    exclude: ["@solana/spl-token", "@solana/web3.js"],
     esbuildOptions: {
       target: "esnext",
       plugins: [NodeGlobalsPolyfillPlugin({ buffer: true })],

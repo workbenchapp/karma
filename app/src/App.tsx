@@ -23,6 +23,7 @@ export const App: React.FC = () => {
           <EditableDProfile
             size={128}
             creator={wallet.publicKey!}
+            user={wallet.publicKey!}
             showKarma
             showUsername
             showAvatar

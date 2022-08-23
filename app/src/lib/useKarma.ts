@@ -1,12 +1,12 @@
+import { web3 } from "@project-serum/anchor";
 import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
-import { PublicKey } from "@solana/web3.js";
 import { useEffect, useMemo, useState } from "react";
 import { Karma } from "./karma";
 
 export const WalletNotDefined = () =>
   new Error("anchor wallet not connected / defined");
 
-export const useKarma = (creator: PublicKey) => {
+export const useKarma = (creator: web3.PublicKey) => {
   const { connection } = useConnection();
   const wallet = useAnchorWallet();
 
@@ -22,9 +22,10 @@ export const useKarma = (creator: PublicKey) => {
     setTips(await karma.getBalance());
   };
 
-  const tip = async (user: PublicKey) => {
+  const tip = async (user: web3.PublicKey) => {
     if (!karma) throw WalletNotDefined();
-    karma?.tip(user);
+    await karma?.tip(user);
+    await refresh();
   };
 
   const newRealm = async () => karma?.newRealm();

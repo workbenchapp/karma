@@ -1,28 +1,28 @@
-import { AnchorProvider, Program, web3 } from "@project-serum/anchor";
-import { ASSOCIATED_PROGRAM_ID } from "@project-serum/anchor/dist/cjs/utils/token";
+import { AnchorProvider, Program } from "@project-serum/anchor";
+import { ASSOCIATED_PROGRAM_ID } from "@project-serum/anchor/dist/esm/utils/token";
 import {
   getAccount,
   getAssociatedTokenAddress,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import { AnchorWallet } from "@solana/wallet-adapter-react";
-import { Connection, PublicKey, SystemProgram } from "@solana/web3.js";
+import * as web3 from "@solana/web3.js";
 import { idl, Karma as KarmaProgram } from ".";
 
 const programID = new web3.PublicKey(idl.metadata.address);
 
 export class Karma {
-  mintAccount?: PublicKey;
+  mintAccount?: web3.PublicKey;
   mintAccountBump?: number;
-  realmAccount?: PublicKey;
+  realmAccount?: web3.PublicKey;
   realmAccountBump?: number;
-  ata?: PublicKey;
+  ata?: web3.PublicKey;
   provider: AnchorProvider;
   program: Program<KarmaProgram>;
 
   constructor(
-    private conn: Connection,
-    private creator: PublicKey,
+    private conn: web3.Connection,
+    private creator: web3.PublicKey,
     private wallet: AnchorWallet
   ) {
     this.provider = new AnchorProvider(
@@ -38,10 +38,11 @@ export class Karma {
   }
 
   async init() {
-    const [mintAccount, mintAccountBump] = await PublicKey.findProgramAddress(
-      [Buffer.from("realm-mint"), this.creator.toBuffer()],
-      programID
-    );
+    const [mintAccount, mintAccountBump] =
+      await web3.PublicKey.findProgramAddress(
+        [Buffer.from("realm-mint"), this.creator.toBuffer()],
+        programID
+      );
     this.mintAccount = mintAccount;
     this.mintAccountBump = mintAccountBump;
     const [realmAccount, realmAccountBump] =
@@ -67,7 +68,7 @@ export class Karma {
       .accounts({
         realm: this.realmAccount,
         creator: this.wallet.publicKey,
-        systemProgram: SystemProgram.programId,
+        systemProgram: web3.SystemProgram.programId,
         mint: this.mintAccount,
         tokenProgram: TOKEN_PROGRAM_ID,
         rent: web3.SYSVAR_RENT_PUBKEY,
@@ -80,7 +81,7 @@ export class Karma {
     return account.amount;
   }
 
-  tip(user: PublicKey) {
+  tip(user: web3.PublicKey) {
     return this.program.methods
       .tip()
       .accounts({
